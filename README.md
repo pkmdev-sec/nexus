@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/banner.svg" alt="Nexus Banner" width="800"/>
-</p>
+![Nexus Banner](assets/banner.svg)
 
 <p align="center">
   <strong>Context Immortality Engine</strong><br/>
@@ -14,6 +12,10 @@
 </p>
 
 ---
+
+## Why Nexus?
+
+From Latin "nexus" meaning connection point, bond, or link. In Roman law, a nexus described an unbreakable obligation between parties. In network science, a nexus is the critical node where multiple pathways converge. NEXUS embodies this concept — it is the connection point between Claude Code contexts, the bond that links ephemeral sessions into persistent knowledge. When context compaction erases working memory, Nexus ensures that critical decisions, patterns, and knowledge remain connected across the void.
 
 ## The Problem
 
