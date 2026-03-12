@@ -15,7 +15,7 @@ Usage in .claude/settings.json:
 import json
 import hashlib
 import sys
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 
 NEXUS_DIR = Path.home() / ".nexus"
@@ -47,11 +47,11 @@ def read_stdin():
 def load_knowledge_graph():
     """Load the knowledge graph."""
     if not KNOWLEDGE_PATH.exists():
-        return {"nodes": {}, "meta": {"created": datetime.utcnow().isoformat(), "version": 1}}
+        return {"nodes": {}, "meta": {"created": datetime.now(UTC).isoformat(), "version": 1}}
     try:
         return json.loads(KNOWLEDGE_PATH.read_text())
     except Exception:
-        return {"nodes": {}, "meta": {"created": datetime.utcnow().isoformat(), "version": 1}}
+        return {"nodes": {}, "meta": {"created": datetime.now(UTC).isoformat(), "version": 1}}
 
 
 def save_knowledge_graph(graph):
@@ -99,7 +99,7 @@ def process_write_edit(tool_name, tool_input, tool_output, graph):
     if not file_path:
         return
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(UTC).isoformat()
     action = "created" if tool_name == "Write" else "modified"
     key = f"file-activity:{file_path}"
 
@@ -131,7 +131,7 @@ def process_bash(tool_input, tool_output, graph):
     if first_word in trivial:
         return
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(UTC).isoformat()
     cmd_hash = hashlib.md5(command.encode()).hexdigest()[:8]
     key = f"command:{cmd_hash}"
 
@@ -168,7 +168,7 @@ def main():
     # Log all tool uses
     log_entry = {
         "tool": tool_name,
-        "ts": datetime.utcnow().isoformat(),
+        "ts": datetime.now(UTC).isoformat(),
         "input_preview": str(tool_input)[:200],
     }
     append_tool_log(log_entry)

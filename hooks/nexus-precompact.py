@@ -17,7 +17,7 @@ import json
 import os
 import sys
 import hashlib
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 
 NEXUS_DIR = Path.home() / ".nexus"
@@ -57,7 +57,7 @@ def extract_decisions(messages):
                     decisions.append({
                         "text": line.strip()[:300],
                         "speaker": msg.get("role", "unknown"),
-                        "ts": datetime.utcnow().isoformat(),
+                        "ts": datetime.now(UTC).isoformat(),
                     })
                     break
     return decisions
@@ -115,7 +115,7 @@ def extract_tasks(messages):
 
 def create_snapshot(messages):
     """Full context snapshot."""
-    ts = datetime.utcnow().isoformat()
+    ts = datetime.now(UTC).isoformat()
     snap_id = hashlib.sha256(f"{ts}{len(messages)}".encode()).hexdigest()[:12]
     return {
         "id": f"snap-{snap_id}",
@@ -136,7 +136,7 @@ def update_knowledge_graph(snapshot):
         except Exception:
             pass
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(UTC).isoformat()
 
     # Store decisions
     for dec in snapshot.get("decisions", []):
@@ -177,8 +177,8 @@ def main():
     if not messages:
         # If no messages provided, just create a timestamp marker
         snapshot = {
-            "id": f"snap-empty-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
-            "ts": datetime.utcnow().isoformat(),
+            "id": f"snap-empty-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}",
+            "ts": datetime.now(UTC).isoformat(),
             "decisions": [],
             "codeChanges": [],
             "tasks": [],

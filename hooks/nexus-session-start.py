@@ -15,7 +15,7 @@ Usage in .claude/settings.json:
 import json
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 NEXUS_DIR = Path.home() / ".nexus"
@@ -42,7 +42,7 @@ def load_recent_snapshots(max_age_hours=72, limit=5):
     if not SNAPSHOTS_DIR.exists():
         return []
 
-    cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+    cutoff = datetime.now(UTC) - timedelta(hours=max_age_hours)
     snapshots = []
 
     for f in sorted(SNAPSHOTS_DIR.iterdir(), reverse=True):
@@ -69,7 +69,7 @@ def score_node(node):
     if updated:
         try:
             age_hours = (
-                datetime.utcnow() - datetime.fromisoformat(updated)
+                datetime.now(UTC) - datetime.fromisoformat(updated)
             ).total_seconds() / 3600
             score += max(0, 1 - age_hours / 168)  # decay over 1 week
         except Exception:
