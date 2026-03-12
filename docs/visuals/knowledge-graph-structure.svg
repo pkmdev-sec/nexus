@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#0a0a14"/>
+    </linearGradient>
+    <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.6"/>
+    </linearGradient>
+    <filter id="nodeGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="600" fill="url(#bg2)" rx="8"/>
+
+  <!-- Title -->
+  <text x="450" y="40" text-anchor="middle" font-family="'SF Mono', monospace"
+        font-size="20" font-weight="700" fill="#e2e8f0" letter-spacing="4">KNOWLEDGE GRAPH STRUCTURE</text>
+  <line x1="200" y1="52" x2="700" y2="52" stroke="#7c3aed" stroke-width="1" opacity="0.3"/>
+
+  <!-- Edges (connections between nodes) -->
+  <g stroke="url(#edgeGrad)" stroke-width="1.5" fill="none">
+    <!-- Central hub connections -->
+    <line x1="450" y1="180" x2="200" y2="130"/>
+    <line x1="450" y1="180" x2="700" y2="130"/>
+    <line x1="450" y1="180" x2="300" y2="300"/>
+    <line x1="450" y1="180" x2="600" y2="300"/>
+    <line x1="450" y1="180" x2="450" y2="350"/>
+
+    <!-- Decision cluster -->
+    <line x1="200" y1="130" x2="120" y2="90" stroke="#3b82f6" opacity="0.4"/>
+    <line x1="200" y1="130" x2="140" y2="190" stroke="#3b82f6" opacity="0.4"/>
+    <line x1="200" y1="130" x2="280" y2="100" stroke="#3b82f6" opacity="0.4"/>
+    <line x1="120" y1="90" x2="140" y2="190" stroke="#3b82f6" opacity="0.2" stroke-dasharray="4,3"/>
+
+    <!-- Code change cluster -->
+    <line x1="700" y1="130" x2="770" y2="90" stroke="#10b981" opacity="0.4"/>
+    <line x1="700" y1="130" x2="780" y2="180" stroke="#10b981" opacity="0.4"/>
+    <line x1="700" y1="130" x2="650" y2="80" stroke="#10b981" opacity="0.4"/>
+    <line x1="770" y1="90" x2="780" y2="180" stroke="#10b981" opacity="0.2" stroke-dasharray="4,3"/>
+
+    <!-- Pattern cluster -->
+    <line x1="300" y1="300" x2="210" y2="340" stroke="#f59e0b" opacity="0.4"/>
+    <line x1="300" y1="300" x2="250" y2="390" stroke="#f59e0b" opacity="0.4"/>
+    <line x1="300" y1="300" x2="350" y2="380" stroke="#f59e0b" opacity="0.4"/>
+
+    <!-- Task cluster -->
+    <line x1="600" y1="300" x2="680" y2="340" stroke="#ef4444" opacity="0.4"/>
+    <line x1="600" y1="300" x2="660" y2="260" stroke="#ef4444" opacity="0.4"/>
+    <line x1="600" y1="300" x2="560" y2="380" stroke="#ef4444" opacity="0.4"/>
+
+    <!-- Session node connections -->
+    <line x1="450" y1="350" x2="380" y2="450" stroke="#7c3aed" opacity="0.4"/>
+    <line x1="450" y1="350" x2="520" y2="450" stroke="#7c3aed" opacity="0.4"/>
+    <line x1="380" y1="450" x2="520" y2="450" stroke="#7c3aed" opacity="0.2" stroke-dasharray="4,3"/>
+
+    <!-- Cross-cluster connections -->
+    <path d="M200,130 Q350,80 700,130" stroke="#ffffff" stroke-width="0.5" opacity="0.1" stroke-dasharray="6,4"/>
+    <path d="M300,300 Q450,260 600,300" stroke="#ffffff" stroke-width="0.5" opacity="0.1" stroke-dasharray="6,4"/>
+  </g>
+
+  <!-- Central node -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="450" cy="180" r="28" fill="#0f172a" stroke="#3b82f6" stroke-width="2.5"/>
+    <text x="450" y="175" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#3b82f6">KNOWLEDGE</text>
+    <text x="450" y="190" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#3b82f6">GRAPH</text>
+  </g>
+
+  <!-- Decision nodes (blue cluster) -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="200" cy="130" r="22" fill="#0f172a" stroke="#3b82f6" stroke-width="2"/>
+    <text x="200" y="134" text-anchor="middle" font-family="monospace" font-size="8" font-weight="600" fill="#3b82f6">Decisions</text>
+  </g>
+  <circle cx="120" cy="90" r="14" fill="#0f172a" stroke="#3b82f6" stroke-width="1.2" opacity="0.7"/>
+  <text x="120" y="93" text-anchor="middle" font-family="monospace" font-size="7" fill="#60a5fa">Use React</text>
+  <circle cx="140" cy="190" r="14" fill="#0f172a" stroke="#3b82f6" stroke-width="1.2" opacity="0.7"/>
+  <text x="140" y="193" text-anchor="middle" font-family="monospace" font-size="7" fill="#60a5fa">Use JWT</text>
+  <circle cx="280" cy="100" r="14" fill="#0f172a" stroke="#3b82f6" stroke-width="1.2" opacity="0.7"/>
+  <text x="280" y="103" text-anchor="middle" font-family="monospace" font-size="7" fill="#60a5fa">Use Vite</text>
+
+  <!-- Code change nodes (green cluster) -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="700" cy="130" r="22" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+    <text x="700" y="127" text-anchor="middle" font-family="monospace" font-size="8" font-weight="600" fill="#10b981">Code</text>
+    <text x="700" y="139" text-anchor="middle" font-family="monospace" font-size="8" font-weight="600" fill="#10b981">Changes</text>
+  </g>
+  <circle cx="770" cy="90" r="14" fill="#0f172a" stroke="#10b981" stroke-width="1.2" opacity="0.7"/>
+  <text x="770" y="93" text-anchor="middle" font-family="monospace" font-size="7" fill="#34d399">App.tsx</text>
+  <circle cx="780" cy="180" r="14" fill="#0f172a" stroke="#10b981" stroke-width="1.2" opacity="0.7"/>
+  <text x="780" y="183" text-anchor="middle" font-family="monospace" font-size="7" fill="#34d399">auth.ts</text>
+  <circle cx="650" cy="80" r="14" fill="#0f172a" stroke="#10b981" stroke-width="1.2" opacity="0.7"/>
+  <text x="650" y="83" text-anchor="middle" font-family="monospace" font-size="7" fill="#34d399">pkg.json</text>
+
+  <!-- Pattern nodes (orange cluster) -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="300" cy="300" r="22" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>
+    <text x="300" y="304" text-anchor="middle" font-family="monospace" font-size="8" font-weight="600" fill="#f59e0b">Patterns</text>
+  </g>
+  <circle cx="210" cy="340" r="14" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" opacity="0.7"/>
+  <text x="210" y="343" text-anchor="middle" font-family="monospace" font-size="6" fill="#fbbf24">camelCase</text>
+  <circle cx="250" cy="390" r="14" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" opacity="0.7"/>
+  <text x="250" y="393" text-anchor="middle" font-family="monospace" font-size="6" fill="#fbbf24">ESLint</text>
+  <circle cx="350" cy="380" r="14" fill="#0f172a" stroke="#f59e0b" stroke-width="1.2" opacity="0.7"/>
+  <text x="350" y="383" text-anchor="middle" font-family="monospace" font-size="6" fill="#fbbf24">monorepo</text>
+
+  <!-- Task nodes (red cluster) -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="600" cy="300" r="22" fill="#0f172a" stroke="#ef4444" stroke-width="2"/>
+    <text x="600" y="304" text-anchor="middle" font-family="monospace" font-size="8" font-weight="600" fill="#ef4444">Tasks</text>
+  </g>
+  <circle cx="680" cy="340" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" opacity="0.7"/>
+  <text x="680" y="343" text-anchor="middle" font-family="monospace" font-size="6" fill="#f87171">add tests</text>
+  <circle cx="660" cy="260" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" opacity="0.7"/>
+  <text x="660" y="263" text-anchor="middle" font-family="monospace" font-size="6" fill="#f87171">fix auth</text>
+  <circle cx="560" cy="380" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" opacity="0.7"/>
+  <text x="560" y="383" text-anchor="middle" font-family="monospace" font-size="6" fill="#f87171">deploy</text>
+
+  <!-- Session nodes (purple) -->
+  <g filter="url(#nodeGlow)">
+    <circle cx="450" cy="350" r="22" fill="#0f172a" stroke="#7c3aed" stroke-width="2"/>
+    <text x="450" y="354" text-anchor="middle" font-family="monospace" font-size="8" font-weight="600" fill="#7c3aed">Sessions</text>
+  </g>
+  <circle cx="380" cy="450" r="16" fill="#0f172a" stroke="#7c3aed" stroke-width="1.2" opacity="0.7"/>
+  <text x="380" y="447" text-anchor="middle" font-family="monospace" font-size="6" fill="#a78bfa">session</text>
+  <text x="380" y="457" text-anchor="middle" font-family="monospace" font-size="6" fill="#a78bfa">#001</text>
+  <circle cx="520" cy="450" r="16" fill="#0f172a" stroke="#7c3aed" stroke-width="1.2" opacity="0.7"/>
+  <text x="520" y="447" text-anchor="middle" font-family="monospace" font-size="6" fill="#a78bfa">session</text>
+  <text x="520" y="457" text-anchor="middle" font-family="monospace" font-size="6" fill="#a78bfa">#002</text>
+
+  <!-- Legend -->
+  <g transform="translate(50, 490)">
+    <text x="0" y="0" font-family="monospace" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="2">LEGEND</text>
+    <line x1="0" y1="8" x2="80" y2="8" stroke="#475569" stroke-width="0.5"/>
+
+    <circle cx="10" cy="30" r="6" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="25" y="34" font-family="monospace" font-size="9" fill="#94a3b8">Decision nodes</text>
+
+    <circle cx="10" cy="52" r="6" fill="none" stroke="#10b981" stroke-width="1.5"/>
+    <text x="25" y="56" font-family="monospace" font-size="9" fill="#94a3b8">Code change nodes</text>
+
+    <circle cx="10" cy="74" r="6" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="25" y="78" font-family="monospace" font-size="9" fill="#94a3b8">Pattern nodes</text>
+
+    <circle cx="200" cy="30" r="6" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="215" y="34" font-family="monospace" font-size="9" fill="#94a3b8">Task nodes</text>
+
+    <circle cx="200" cy="52" r="6" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="215" y="56" font-family="monospace" font-size="9" fill="#94a3b8">Session nodes</text>
+
+    <line x1="200" y1="74" x2="230" y2="74" stroke="#ffffff" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.3"/>
+    <text x="240" y="78" font-family="monospace" font-size="9" fill="#94a3b8">Cross-cluster edge</text>
+  </g>
+
+  <!-- Storage note -->
+  <g transform="translate(600, 500)">
+    <rect x="0" y="0" width="260" height="70" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1" opacity="0.6"/>
+    <text x="130" y="22" text-anchor="middle" font-family="monospace" font-size="9" font-weight="600" fill="#94a3b8">PERSISTENT STORAGE</text>
+    <text x="130" y="40" text-anchor="middle" font-family="monospace" font-size="9" fill="#64748b">~/.nexus/knowledge.json</text>
+    <text x="130" y="56" text-anchor="middle" font-family="monospace" font-size="9" fill="#64748b">~/.nexus/sessions/*.json</text>
+  </g>
+</svg>

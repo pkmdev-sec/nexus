@@ -1,0 +1,28 @@
+{
+  "name": "nexus",
+  "version": "1.0.0",
+  "description": "Context Immortality Engine — knowledge graphs, compaction survival, cross-session memory",
+  "type": "module",
+  "main": "lib/context-extractor.mjs",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:verbose": "node --test --test-reporter=spec tests/*.test.mjs"
+  },
+  "keywords": [
+    "context",
+    "knowledge-graph",
+    "compaction",
+    "session-bridge",
+    "claude-code",
+    "memory"
+  ],
+  "author": "pkmdev-sec",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pkmdev-sec/nexus.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
