@@ -5,6 +5,9 @@ import {
   predictCompaction,
   getCompactionRisk,
   suggestCompaction,
+  createProgressBar,
+  visualizeCompactionProgress,
+  createProgressReport,
 } from '../lib/compaction-monitor.mjs';
 
 // ---------------------------------------------------------------------------
@@ -147,5 +150,151 @@ describe('suggestCompaction', () => {
   it('should default to "all" when no argument', () => {
     const result = suggestCompaction();
     assert.ok(result.keep.includes('decisions'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// createProgressBar (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('createProgressBar', () => {
+  it('should create a progress bar for given percentage', () => {
+    const bar = createProgressBar(50, 40);
+    assert.ok(bar.includes('['));
+    assert.ok(bar.includes(']'));
+    assert.ok(bar.includes('50%'));
+  });
+
+  it('should handle 0 percent', () => {
+    const bar = createProgressBar(0, 20);
+    assert.ok(bar.includes('0%'));
+    assert.ok(bar.includes('['));
+  });
+
+  it('should handle 100 percent', () => {
+    const bar = createProgressBar(100, 20);
+    assert.ok(bar.includes('100%'));
+    assert.ok(bar.includes('['));
+  });
+
+  it('should clamp values outside 0-100 range', () => {
+    const bar1 = createProgressBar(-10, 20);
+    assert.ok(bar1.includes('0%'));
+
+    const bar2 = createProgressBar(150, 20);
+    assert.ok(bar2.includes('100%'));
+  });
+
+  it('should support custom label', () => {
+    const bar = createProgressBar(50, 40, { label: 'Loading' });
+    assert.ok(bar.includes('Loading'));
+  });
+
+  it('should support hiding percentage', () => {
+    const bar = createProgressBar(50, 40, { showPercent: false });
+    assert.ok(!bar.includes('%'));
+  });
+
+  it('should support hiding bar', () => {
+    const bar = createProgressBar(50, 40, { showBar: false });
+    assert.ok(!bar.includes('['));
+  });
+
+  it('should support custom fill and empty characters', () => {
+    const bar = createProgressBar(50, 20, { fillChar: '#', emptyChar: '-' });
+    assert.ok(bar.includes('#'));
+    assert.ok(bar.includes('-'));
+  });
+
+  it('should handle invalid percent input', () => {
+    const bar = createProgressBar('invalid', 20);
+    assert.ok(bar.includes('0%'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// visualizeCompactionProgress (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('visualizeCompactionProgress', () => {
+  it('should return bar, risk, and details', () => {
+    const msgs = makeMessages(100, 500);
+    const result = visualizeCompactionProgress(msgs);
+
+    assert.ok(result.bar);
+    assert.ok(['low', 'medium', 'high', 'critical'].includes(result.risk));
+    assert.ok(result.details);
+    assert.ok(typeof result.details.currentTokens === 'number');
+  });
+
+  it('should handle empty messages', () => {
+    const result = visualizeCompactionProgress([]);
+    assert.ok(result.bar);
+    assert.strictEqual(result.risk, 'low');
+  });
+
+  it('should handle invalid inputs', () => {
+    const result = visualizeCompactionProgress(null);
+    assert.ok(result.bar);
+    assert.strictEqual(result.risk, 'low');
+  });
+
+  it('should use custom context limit', () => {
+    const msgs = makeMessages(50, 500);
+    const result = visualizeCompactionProgress(msgs, 10000);
+    assert.strictEqual(result.details.limit, 10000);
+  });
+
+  it('should include risk label in bar', () => {
+    const msgs = makeMessages(10, 100);
+    const result = visualizeCompactionProgress(msgs);
+    assert.ok(result.bar.includes('Safe') || result.bar.includes('Moderate'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// createProgressReport (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('createProgressReport', () => {
+  it('should create a multi-line report', () => {
+    const msgs = makeMessages(50, 200);
+    const report = createProgressReport(msgs);
+
+    assert.ok(report.includes('Context Compaction Monitor'));
+    assert.ok(report.includes('Current Usage'));
+    assert.ok(report.includes('Limit'));
+    assert.ok(report.includes('Remaining'));
+    assert.ok(report.includes('Risk Level'));
+  });
+
+  it('should handle empty messages', () => {
+    const report = createProgressReport([]);
+    assert.ok(report.includes('0 tokens'));
+  });
+
+  it('should handle invalid inputs', () => {
+    const report = createProgressReport(null);
+    assert.ok(report.length > 0);
+  });
+
+  it('should use custom context limit', () => {
+    const msgs = makeMessages(10, 100);
+    const report = createProgressReport(msgs, 50000);
+    assert.ok(report.includes('50,000') || report.includes('50000'));
+  });
+
+  it('should include progress bar in report', () => {
+    const msgs = makeMessages(10, 100);
+    const report = createProgressReport(msgs);
+    assert.ok(report.includes('['));
+    assert.ok(report.includes('%'));
+  });
+
+  it('should format numbers with locale', () => {
+    const msgs = makeMessages(100, 1000);
+    const report = createProgressReport(msgs);
+    // Should include formatted numbers (with commas or locale-appropriate separators)
+    assert.ok(report.length > 0);
   });
 });

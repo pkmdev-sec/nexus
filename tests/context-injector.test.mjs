@@ -5,6 +5,9 @@ import {
   formatForInjection,
   estimateTokens,
   inject,
+  applyRelevanceDecay,
+  reRankWithDecay,
+  getAgeWeight,
 } from '../lib/context-injector.mjs';
 
 // ---------------------------------------------------------------------------
@@ -130,5 +133,153 @@ describe('inject', () => {
   it('should handle empty entries', () => {
     const result = inject([], 2000);
     assert.strictEqual(result.included, 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applyRelevanceDecay (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('applyRelevanceDecay', () => {
+  it('should add decayedScore to entries', () => {
+    const entries = [
+      { key: 'recent', value: 'Recent', metadata: { updatedAt: new Date().toISOString() } },
+      { key: 'old', value: 'Old', metadata: { updatedAt: '2020-01-01T00:00:00.000Z' } },
+    ];
+
+    const decayed = applyRelevanceDecay(entries);
+    assert.strictEqual(decayed.length, 2);
+    assert.ok(decayed.every((e) => typeof e.decayedScore === 'number'));
+  });
+
+  it('should give higher scores to recent entries', () => {
+    const entries = [
+      { key: 'recent', value: 'R', metadata: { updatedAt: new Date().toISOString() } },
+      { key: 'old', value: 'O', metadata: { updatedAt: '2020-01-01T00:00:00.000Z' } },
+    ];
+
+    const decayed = applyRelevanceDecay(entries);
+    const recentScore = decayed.find((e) => e.key === 'recent').decayedScore;
+    const oldScore = decayed.find((e) => e.key === 'old').decayedScore;
+
+    assert.ok(recentScore > oldScore, 'Recent entries should have higher decay scores');
+  });
+
+  it('should preserve pinned entries when option is set', () => {
+    const entries = [
+      { key: 'pinned', value: 'P', metadata: { updatedAt: '2020-01-01T00:00:00.000Z', pinned: true } },
+    ];
+
+    const decayed = applyRelevanceDecay(entries, { preservePinned: true });
+    assert.strictEqual(decayed[0].decayedScore, 1.0);
+  });
+
+  it('should handle entries without timestamps', () => {
+    const entries = [{ key: 'no-ts', value: 'X' }];
+    const decayed = applyRelevanceDecay(entries);
+    assert.ok(decayed[0].decayedScore >= 0 && decayed[0].decayedScore <= 1);
+  });
+
+  it('should handle empty arrays', () => {
+    const decayed = applyRelevanceDecay([]);
+    assert.deepStrictEqual(decayed, []);
+  });
+
+  it('should handle non-array inputs', () => {
+    const decayed = applyRelevanceDecay(null);
+    assert.deepStrictEqual(decayed, []);
+  });
+
+  it('should apply maxAge penalty', () => {
+    const veryOld = new Date(Date.now() - 30 * 86_400_000).toISOString(); // 30 days old
+    const entries = [{ key: 'ancient', value: 'A', metadata: { updatedAt: veryOld } }];
+
+    const decayed = applyRelevanceDecay(entries, { maxAge: 7 * 86_400_000 }); // 7 days
+    assert.ok(decayed[0].decayedScore < 0.5, 'Very old entries should have low scores');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// reRankWithDecay (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('reRankWithDecay', () => {
+  it('should re-rank entries with combined score', () => {
+    const entries = [
+      { key: 'a', value: 'A', score: 0.9, metadata: { updatedAt: '2020-01-01T00:00:00.000Z' } },
+      { key: 'b', value: 'B', score: 0.3, metadata: { updatedAt: new Date().toISOString() } },
+    ];
+
+    const ranked = reRankWithDecay(entries);
+    assert.strictEqual(ranked.length, 2);
+    assert.ok(ranked.every((e) => typeof e.combinedScore === 'number'));
+  });
+
+  it('should sort by combined score', () => {
+    const entries = [
+      { key: 'low', value: 'L', score: 0.2, metadata: { updatedAt: '2020-01-01T00:00:00.000Z' } },
+      { key: 'high', value: 'H', score: 0.9, metadata: { updatedAt: new Date().toISOString() } },
+    ];
+
+    const ranked = reRankWithDecay(entries);
+    assert.strictEqual(ranked[0].key, 'high', 'Highest combined score should be first');
+  });
+
+  it('should handle entries without scores', () => {
+    const entries = [
+      { key: 'no-score', value: 'X', metadata: { updatedAt: new Date().toISOString() } },
+    ];
+
+    const ranked = reRankWithDecay(entries);
+    assert.ok(ranked[0].combinedScore >= 0);
+  });
+
+  it('should handle empty arrays', () => {
+    const ranked = reRankWithDecay([]);
+    assert.deepStrictEqual(ranked, []);
+  });
+
+  it('should handle invalid inputs', () => {
+    const ranked = reRankWithDecay(null);
+    assert.deepStrictEqual(ranked, []);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getAgeWeight (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('getAgeWeight', () => {
+  it('should return weight between 0 and 1', () => {
+    const entry = { metadata: { updatedAt: new Date().toISOString() } };
+    const weight = getAgeWeight(entry);
+    assert.ok(weight >= 0 && weight <= 1);
+  });
+
+  it('should give higher weight to recent entries', () => {
+    const recent = { metadata: { updatedAt: new Date().toISOString() } };
+    const old = { metadata: { updatedAt: '2020-01-01T00:00:00.000Z' } };
+
+    const recentWeight = getAgeWeight(recent);
+    const oldWeight = getAgeWeight(old);
+
+    assert.ok(recentWeight > oldWeight, 'Recent entries should have higher weights');
+  });
+
+  it('should handle entries without timestamps', () => {
+    const entry = { key: 'no-ts' };
+    const weight = getAgeWeight(entry);
+    assert.strictEqual(weight, 0.5);
+  });
+
+  it('should respect custom half-life', () => {
+    const entry = { metadata: { updatedAt: new Date(Date.now() - 7 * 86_400_000).toISOString() } };
+    const weight7 = getAgeWeight(entry, 7);
+    assert.ok(Math.abs(weight7 - 0.5) < 0.01, 'Weight should be ~0.5 at half-life');
+  });
+
+  it('should handle invalid inputs', () => {
+    assert.strictEqual(getAgeWeight(null), 0.5);
+    assert.strictEqual(getAgeWeight(undefined), 0.5);
   });
 });

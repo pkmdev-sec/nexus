@@ -129,6 +129,38 @@ All persistent data lives in `~/.nexus/`:
 └── tool-log.jsonl          # Tool activity log
 ```
 
+## Examples
+
+Nexus includes practical examples demonstrating key workflows:
+
+### Save Context Before Compaction
+
+**[examples/save-context.mjs](examples/save-context.mjs)** - Demonstrates extracting and persisting decisions, code changes, patterns, and tasks from a conversation before compaction occurs.
+
+```bash
+node examples/save-context.mjs
+```
+
+This example shows how to:
+- Detect compaction risk in real-time
+- Extract decisions, code changes, patterns, and tasks from messages
+- Store critical knowledge in the graph with appropriate tags
+- Query and verify stored knowledge
+
+### Cross-Session Memory
+
+**[examples/cross-session.mjs](examples/cross-session.mjs)** - Demonstrates bridging context across separate Claude Code sessions by finding relevant past knowledge and re-injecting it.
+
+```bash
+node examples/cross-session.mjs
+```
+
+This example shows how to:
+- Save session summaries with structured metadata
+- Find relevant past sessions based on project/topic
+- Merge context from multiple sessions
+- Select and inject relevant knowledge within token budgets
+
 ## API Reference
 
 ### Context Extractor
@@ -149,6 +181,23 @@ store('my-key', { data: 'value' }, { tags: ['important'], pinned: true });
 const results = query('my-key');    // by key or tag
 const related = getRelated('my-key'); // via relations
 prune(7 * 24 * 60 * 60 * 1000);    // prune entries older than 1 week
+```
+
+#### Path Finding
+
+Find connections between concepts in the knowledge graph:
+
+```javascript
+import { findPathBFS, findPathDFS, findAllPaths, getPathDistance } from './lib/knowledge-graph.mjs';
+
+// Find shortest path between two concepts
+const path = findPathBFS('auth:jwt', 'db:users');  // → ['auth:jwt', 'api:auth', 'db:users']
+
+// Find all paths (up to a limit)
+const allPaths = findAllPaths('frontend:react', 'backend:api', 10);
+
+// Get distance between concepts
+const distance = getPathDistance('auth:jwt', 'db:users');  // → 2
 ```
 
 ### Context Injector
@@ -179,6 +228,109 @@ const risk = getCompactionRisk(messages); // → 'low' | 'medium' | 'high' | 'cr
 const prediction = predictCompaction(messages);
 // → { currentTokens, limit, tokensRemaining, messagesUntilCompaction, percentUsed }
 ```
+
+## Visualization
+
+Nexus can export your knowledge graph for visualization in external tools:
+
+### DOT Format (Graphviz)
+
+Export to DOT format for rendering with Graphviz tools like `dot`, `neato`, or `circo`:
+
+```javascript
+import { exportDOT } from './lib/knowledge-graph.mjs';
+import { writeFileSync } from 'fs';
+
+// Export with default options (color-coded by recency)
+const dot = exportDOT();
+writeFileSync('knowledge-graph.dot', dot);
+
+// Render with Graphviz
+// $ dot -Tpng knowledge-graph.dot -o knowledge-graph.png
+// $ neato -Tsvg knowledge-graph.dot -o knowledge-graph.svg
+```
+
+Options:
+- `includeMetadata` (default: `true`) - Include node values in labels
+- `layout` (default: `'dot'`) - Graphviz layout engine hint
+- `colorByAge` (default: `true`) - Color nodes by recency:
+  - Green: < 1 day old
+  - Blue: < 7 days old
+  - Gold: < 30 days old
+  - Orange: > 30 days old
+
+### Mermaid Format
+
+Export to Mermaid diagram syntax for rendering in Markdown or documentation sites:
+
+```javascript
+import { exportMermaid } from './lib/knowledge-graph.mjs';
+
+const mermaid = exportMermaid();
+console.log(mermaid);
+// Paste into GitHub/GitLab markdown or mermaid.live
+```
+
+Example output:
+```mermaid
+graph LR
+  db_orm["db:orm"]
+  auth_strategy["auth:strategy"]
+  db_orm --> auth_strategy
+```
+
+## Memory Management
+
+Nexus provides tools to maintain a healthy knowledge graph and prevent unbounded growth:
+
+### Graph Statistics
+
+Get insights into your knowledge graph for maintenance decisions:
+
+```javascript
+import { getGraphStats } from './lib/knowledge-graph.mjs';
+
+const stats = getGraphStats();
+console.log(stats);
+// {
+//   totalNodes: 156,
+//   pinnedCount: 23,
+//   orphanCount: 12,      // nodes with no relations
+//   staleCount: 8,         // older than 30 days
+//   tagCounts: {
+//     'decision': 15,
+//     'pattern': 8,
+//     'database': 12,
+//     ...
+//   }
+// }
+```
+
+### Pruning Utilities
+
+Remove old or unused nodes to keep the graph focused and performant:
+
+```javascript
+import { prune, pruneOrphans } from './lib/knowledge-graph.mjs';
+
+// Remove nodes older than 30 days (respects pinned nodes)
+const removed = prune(30 * 24 * 60 * 60 * 1000);
+console.log(`Pruned ${removed} stale nodes`);
+
+// Remove orphan nodes (no relations to other nodes)
+const result = pruneOrphans({
+  keepPinned: true,      // Keep pinned orphans (default: true)
+  minAge: 7 * 86400000   // Only remove orphans older than 7 days (default: 0)
+});
+console.log(`Removed ${result.removed} orphans, ${result.remaining} nodes remain`);
+```
+
+**Best Practices:**
+- Run `getGraphStats()` periodically to monitor graph health
+- Prune stale nodes monthly: `prune(30 * 86400000)`
+- Remove old orphans weekly: `pruneOrphans({ minAge: 7 * 86400000 })`
+- Always pin critical decisions and architectural patterns
+- Use tags to categorize nodes for targeted cleanup
 
 ## License
 

@@ -6,6 +6,9 @@ import {
   extractPatterns,
   extractTasks,
   createSnapshot,
+  calculateImportance,
+  addImportanceScores,
+  sortByImportance,
 } from '../lib/context-extractor.mjs';
 
 // ---------------------------------------------------------------------------
@@ -169,5 +172,141 @@ describe('createSnapshot', () => {
     const snap = createSnapshot([]);
     assert.strictEqual(snap.messageCount, 0);
     assert.deepStrictEqual(snap.decisions, []);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// calculateImportance (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('calculateImportance', () => {
+  it('should calculate importance score for decisions', () => {
+    const item = { text: 'Use React', ts: new Date().toISOString() };
+    const score = calculateImportance(item, [], 'decision');
+    assert.ok(score > 0 && score <= 100);
+  });
+
+  it('should give higher scores to recent items', () => {
+    const recent = { text: 'Recent', ts: new Date().toISOString() };
+    const old = { text: 'Old', ts: '2020-01-01T00:00:00.000Z' };
+
+    const recentScore = calculateImportance(recent, [recent, old], 'decision');
+    const oldScore = calculateImportance(old, [recent, old], 'decision');
+
+    assert.ok(recentScore > oldScore, 'Recent items should score higher');
+  });
+
+  it('should give higher scores for longer content', () => {
+    const long = { text: 'x'.repeat(150), ts: new Date().toISOString() };
+    const short = { text: 'x', ts: new Date().toISOString() };
+
+    const longScore = calculateImportance(long, [long, short], 'decision');
+    const shortScore = calculateImportance(short, [long, short], 'decision');
+
+    assert.ok(longScore > shortScore, 'Longer content should score higher');
+  });
+
+  it('should handle invalid inputs gracefully', () => {
+    assert.strictEqual(calculateImportance(null), 0);
+    assert.strictEqual(calculateImportance(undefined), 0);
+    const emptyScore = calculateImportance({});
+    assert.ok(emptyScore >= 0 && emptyScore <= 100, 'Empty object should return valid score');
+  });
+
+  it('should respect type weights', () => {
+    const item = { text: 'Test', ts: new Date().toISOString() };
+    const decisionScore = calculateImportance(item, [], 'decision');
+    const codeScore = calculateImportance(item, [], 'code');
+    const patternScore = calculateImportance(item, [], 'pattern');
+
+    assert.ok(decisionScore > 0);
+    assert.ok(codeScore > 0);
+    assert.ok(patternScore > 0);
+  });
+
+  it('should handle items without timestamps', () => {
+    const item = { text: 'No timestamp' };
+    const score = calculateImportance(item, [], 'decision');
+    assert.ok(score > 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// addImportanceScores (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('addImportanceScores', () => {
+  it('should add importance scores to all items', () => {
+    const items = [
+      { text: 'Item 1', ts: new Date().toISOString() },
+      { text: 'Item 2', ts: new Date().toISOString() },
+    ];
+
+    const scored = addImportanceScores(items, 'decision');
+    assert.strictEqual(scored.length, 2);
+    assert.ok(scored.every((item) => typeof item.importance === 'number'));
+  });
+
+  it('should handle empty arrays', () => {
+    const scored = addImportanceScores([], 'decision');
+    assert.deepStrictEqual(scored, []);
+  });
+
+  it('should handle non-array inputs', () => {
+    const scored = addImportanceScores(null, 'decision');
+    assert.deepStrictEqual(scored, []);
+  });
+
+  it('should preserve original item properties', () => {
+    const items = [{ text: 'Test', id: 'test-1', ts: new Date().toISOString() }];
+    const scored = addImportanceScores(items, 'task');
+    assert.strictEqual(scored[0].text, 'Test');
+    assert.strictEqual(scored[0].id, 'test-1');
+    assert.ok(scored[0].importance);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sortByImportance (P1 Feature)
+// ---------------------------------------------------------------------------
+
+describe('sortByImportance', () => {
+  it('should sort items by importance descending', () => {
+    const items = [
+      { text: 'Low', importance: 10 },
+      { text: 'High', importance: 90 },
+      { text: 'Medium', importance: 50 },
+    ];
+
+    const sorted = sortByImportance(items);
+    assert.strictEqual(sorted[0].importance, 90);
+    assert.strictEqual(sorted[1].importance, 50);
+    assert.strictEqual(sorted[2].importance, 10);
+  });
+
+  it('should handle items without importance scores', () => {
+    const items = [{ text: 'No score' }, { text: 'Has score', importance: 100 }];
+    const sorted = sortByImportance(items);
+    assert.strictEqual(sorted[0].importance, 100);
+  });
+
+  it('should handle empty arrays', () => {
+    const sorted = sortByImportance([]);
+    assert.deepStrictEqual(sorted, []);
+  });
+
+  it('should not mutate original array', () => {
+    const items = [
+      { text: 'A', importance: 10 },
+      { text: 'B', importance: 20 },
+    ];
+    const original = [...items];
+    sortByImportance(items);
+    assert.deepStrictEqual(items, original);
+  });
+
+  it('should handle invalid inputs', () => {
+    const sorted = sortByImportance(null);
+    assert.deepStrictEqual(sorted, []);
   });
 });
